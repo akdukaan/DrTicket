@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const { Client, Collection, Intents } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId, token } = require('./config.json');
+const { clientId, guildId } = require('./config.json');
 const sqlite3 = require('sqlite3');
 require('dotenv').config()
 
