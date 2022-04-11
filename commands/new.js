@@ -16,7 +16,8 @@ module.exports = {
             return;
         }
         if (ticket !== undefined) {
-            const channel = message.guild.channels.cache.get(ticket);
+            const channel = interaction.guild.channels.cache.get(ticket);
+            console.log("channel is " + channel.id)
             if (channel) {
                 interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
                 ticketchannel = interaction.guild.channels.cache.get(ticket)
@@ -30,7 +31,7 @@ module.exports = {
                 }
                 return;
             }
-            removeTicket(channel);
+            removeTicket(interaction.guild.id, channel);
         }
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
@@ -49,8 +50,14 @@ module.exports = {
     },
 };
 
-async function removeTicket(channelid) {
+async function removeTicket(guildid, channelid) {
     // Remove the ticket from the tickets DB
+    console.log("removing ticket")
+    let db = new sqlite3.Database("./storage.sqlite3", (err) => {
+        db.get(`DELETE FROM tickets${guildid} WHERE channelid = ?`, channelid, function(err, row) {
+        });
+    });
+    db.close();
 }
 
 
@@ -62,6 +69,7 @@ async function getCategory(guildid) {
                     resolve(row.category);
                 })
             });
+            db.close();
         }, 1000);
     })
 }
@@ -78,6 +86,7 @@ async function getTicket(guildid, memberid) {
                     }
                     resolve(row.channel);
                 })
+                db.close();
             });
         }, 1000);
     })
