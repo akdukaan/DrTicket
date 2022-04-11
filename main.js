@@ -1,9 +1,6 @@
 
 const fs = require('node:fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId } = require('./config.json');
 const sqlite3 = require('sqlite3');
 require('dotenv').config()
 
@@ -52,18 +49,29 @@ const createDatabases = () => {
 
 
 client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-
-	const command = client.commands.get(interaction.commandName);
-
-	if (!command) return;
-
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
+	if (interaction.isCommand()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+        return;
+    }
+    if (interaction.isButton()) {
+        console.log("BUTTON CLICKED")
+        const command = client.commands.get(interaction.customId);
+        if (!command) return;
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+        return;
+    }
 });
 
 // When someone leaves, do same thing as close command
@@ -71,8 +79,6 @@ client.on('interactionCreate', async interaction => {
 // When someone says something in a ticket channel
 // If they have access to the category, set their expiry to 48h (add item to expiry table)
 // Else set their expiry to null (remove item from the expiry table)
-
-// When someone clicks a createticket button, if they need a ticket, make one for them
 
 
 client.login(process.env.KEY);
