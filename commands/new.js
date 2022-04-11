@@ -50,11 +50,6 @@ module.exports = {
     },
 };
 
-async function removeTicket(channelid) {
-    // Remove the ticket from the tickets DB
-}
-
-
 async function getCategory(guildid) {
     return new Promise(resolve => {
             let db = new sqlite3.Database("./storage.sqlite3", (err) => {
