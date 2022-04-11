@@ -15,6 +15,7 @@ module.exports = {
             interaction.reply({ content: 'Tickets have not yet been set up for this server', ephemeral: true });
             return;
         }
+
         if (ticket) {
             const channel = interaction.guild.channels.cache.get(ticket);
             if (channel) {
@@ -25,6 +26,7 @@ module.exports = {
             console.log(channel)
             deleteTicket(interaction.guild.id, ticket);
         }
+      
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
             parent: category,
@@ -42,6 +44,7 @@ module.exports = {
         
     },
 };
+
 
 async function deleteTicket(guildid, channelid) {
     console.log("deleting ticket")
