@@ -16,7 +16,7 @@ module.exports = {
             return;
         }
         if (ticket !== undefined) {
-            const channel = message.guild.channels.cache.get(ticket);
+            const channel = interaction.guild.channels.cache.get(ticket);
             if (channel) {
                 interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
                 ticketchannel = interaction.guild.channels.cache.get(ticket)
@@ -57,29 +57,23 @@ async function removeTicket(channelid) {
 
 async function getCategory(guildid) {
     return new Promise(resolve => {
-        setTimeout(() => {
             let db = new sqlite3.Database("./storage.sqlite3", (err) => {
                 db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
+                    if (!row) return resolve(undefined);
                     resolve(row.category);
                 })
             });
-        }, 1000);
     })
 }
 
 
 async function getTicket(guildid, memberid) {
     return new Promise(resolve => {
-        setTimeout(() => {
-            let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                db.get(`SELECT channel FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
-                    if (row === undefined) { 
-                        resolve(undefined);
-                        return;
-                    }
-                    resolve(row.channel);
-                })
-            });
-        }, 1000);
+        let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+            db.get(`SELECT channel FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
+                if (!row) return resolve(undefined);
+                resolve(row.channel);
+            })
+        });
     })
 }
