@@ -15,24 +15,26 @@ module.exports = {
             interaction.reply({ content: 'Tickets have not yet been set up for this server', ephemeral: true });
             return;
         }
-        if (ticket !== undefined) {
-            // TODO WHY THIS SO INCONSISTENT
+
+        if (ticket) {
             const channel = interaction.guild.channels.cache.get(ticket);
-            if (channel !== undefined) {
-                interaction.reply({content: "You already have an open ticket <mention channel>. Please use that.", ephemeral: true});
-                channel.send("hi, use this channel <insert @ mention here>");
+            if (channel) {
+                interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
+                channel.send("hi, use this channel my man");
                 return;
             }
-            removeTicket(interaction.guild.id, ticket);
+            console.log(channel)
+            deleteTicket(interaction.guild.id, ticket);
         }
+      
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
+            parent: category,
             permissionOverwrites: [{
                 id: interaction.member.id,
                 allow: ['VIEW_CHANNEL']
             }]
         }).then (channel => {
-            channel.setParent(category);
             channel.send('Your new ticket channel is here');
             db = new sqlite3.Database("./storage.sqlite3", (err) => { 
                 db.run(`INSERT INTO tickets${interaction.guild.id} VALUES (?, ?)`, [channel.id, interaction.member.id]);
@@ -43,14 +45,12 @@ module.exports = {
     },
 };
 
-async function removeTicket(guildid, channel) {
-    // Remove the ticket from the tickets DB
-    console.log("removing ticket")
-    let db = new sqlite3.Database("./storage.sqlite3", (err) => {
-        db.get(`DELETE FROM tickets${guildid} WHERE channel = ?`, channel, function(err, row) {
-        });
+
+async function deleteTicket(guildid, channelid) {
+    console.log("deleting ticket")
+    let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+        db.run(`DELETE FROM tickets${guildid} WHERE channel = ?`, channelid)
     });
-    db.close();
 }
 
 

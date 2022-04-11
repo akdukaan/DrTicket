@@ -19,7 +19,9 @@
   "dependencies": {
     "@discordjs/rest": "^0.3.0",
     "discord.js": "^13.6.0",
+    "discord.js-transcript": "^1.0.4",
     "dotenv": "^16.0.0",
+    "hastebin": "^0.2.1",
     "sqlite3": "^5.0.2"
   }
 }

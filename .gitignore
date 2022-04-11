@@ -91,3 +91,4 @@ lerna-debug.log
 Thumbs.db
 storage.sqlite3
 config.json
+package-lock.json
