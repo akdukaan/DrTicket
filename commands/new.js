@@ -16,22 +16,14 @@ module.exports = {
             return;
         }
         if (ticket !== undefined) {
+            // TODO WHY THIS SO INCONSISTENT
             const channel = interaction.guild.channels.cache.get(ticket);
-            console.log("channel is " + channel.id)
-            if (channel) {
-                interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
-                ticketchannel = interaction.guild.channels.cache.get(ticket)
-                if (ticketchannel === undefined) {
-                    db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                        db.run(`DELETE FROM tickets${interaction.guild.id}`)
-                    });
-                } else {
-                    console.log(ticketchannel)
-                    ticketchannel.send("hi, use this channel my man");
-                }
+            if (channel !== undefined) {
+                interaction.reply({content: "You already have an open ticket <mention channel>. Please use that.", ephemeral: true});
+                channel.send("hi, use this channel <insert @ mention here>");
                 return;
             }
-            removeTicket(interaction.guild.id, channel);
+            removeTicket(interaction.guild.id, ticket);
         }
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
@@ -50,11 +42,11 @@ module.exports = {
     },
 };
 
-async function removeTicket(guildid, channelid) {
+async function removeTicket(guildid, channel) {
     // Remove the ticket from the tickets DB
     console.log("removing ticket")
     let db = new sqlite3.Database("./storage.sqlite3", (err) => {
-        db.get(`DELETE FROM tickets${guildid} WHERE channelid = ?`, channelid, function(err, row) {
+        db.get(`DELETE FROM tickets${guildid} WHERE channel = ?`, channel, function(err, row) {
         });
     });
     db.close();
