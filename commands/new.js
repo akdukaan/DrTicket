@@ -16,17 +16,21 @@ module.exports = {
             return;
         }
         if (ticket !== undefined) {
-            interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
-            ticketchannel = interaction.guild.channels.cache.get(ticket)
-            if (ticketchannel === undefined) {
-                db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                    db.run(`DELETE FROM tickets${interaction.guild.id}`)
-                });
-            } else {
-                console.log(ticketchannel)
-                ticketchannel.send("hi, use this channel my man");
+            const channel = message.guild.channels.cache.get(ticket);
+            if (channel) {
+                interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
+                ticketchannel = interaction.guild.channels.cache.get(ticket)
+                if (ticketchannel === undefined) {
+                    db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+                        db.run(`DELETE FROM tickets${interaction.guild.id}`)
+                    });
+                } else {
+                    console.log(ticketchannel)
+                    ticketchannel.send("hi, use this channel my man");
+                }
+                return;
             }
-            return;
+            removeTicket(channel);
         }
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
@@ -45,11 +49,16 @@ module.exports = {
     },
 };
 
+async function removeTicket(channelid) {
+    // Remove the ticket from the tickets DB
+}
+
+
 async function getCategory(guildid) {
     return new Promise(resolve => {
         setTimeout(() => {
-            let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                db.get(`SELECT category FROM guilds WHERE guild = ${guildid}`, function(err, row) {
+            let db = new sqlite3.Database("./storage.sqlite3", (err) => {
+                db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
                     resolve(row.category);
                 })
             });
@@ -62,8 +71,12 @@ async function getTicket(guildid, memberid) {
     return new Promise(resolve => {
         setTimeout(() => {
             let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                db.get(`SELECT category FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
-                    resolve(row.category);
+                db.get(`SELECT channel FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
+                    if (row === undefined) { 
+                        resolve(undefined);
+                        return;
+                    }
+                    resolve(row.channel);
                 })
             });
         }, 1000);
