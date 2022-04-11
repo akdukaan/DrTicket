@@ -35,14 +35,14 @@ const createDatabases = () => {
             console.log('Database created!')
             let guilds = client.guilds.cache
             guilds.forEach(g => {
-                db.run(`CREATE TABLE IF NOT EXISTS tickets${g.id}(channel BIGINT PRIMARY KEY, creator BIGINT NOT NULL)`);
+                db.run(`CREATE TABLE IF NOT EXISTS tickets${g.id}(channel TEXT PRIMARY KEY, creator TEXT NOT NULL)`);
             })
             // Create drafts table
-            db.run(`CREATE TABLE IF NOT EXISTS drafts(id INTEGER PRIMARY KEY, guild BIGINT, channel BIGINT, message VARCHAR(2000), triggertime TIMESTAMP)`);
+            db.run(`CREATE TABLE IF NOT EXISTS drafts(id INTEGER PRIMARY KEY, guild TEXT, channel TEXT, message TEXT, triggertime TIMESTAMP)`);
             // Create expirations table
-            db.run(`CREATE TABLE IF NOT EXISTS expirations(channel BIGINT PRIMARY KEY, guild BIGINT, triggertime TIMESTAMP)`);
+            db.run(`CREATE TABLE IF NOT EXISTS expirations(channel TEXT PRIMARY KEY, guild TEXT, triggertime TIMESTAMP)`);
 			// Create guilds table
-			db.run(`CREATE TABLE IF NOT EXISTS guilds(guild BIGINT PRIMARY KEY, transcript BIGINT, category BIGINT, counter INT)`);
+			db.run(`CREATE TABLE IF NOT EXISTS guilds(guild TEXT PRIMARY KEY, transcript TEXT, category TEXT, counter INT)`);
 
         } 
     })
