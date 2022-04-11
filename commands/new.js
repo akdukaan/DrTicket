@@ -15,22 +15,15 @@ module.exports = {
             interaction.reply({ content: 'Tickets have not yet been set up for this server', ephemeral: true });
             return;
         }
-        if (ticket !== undefined) {
+        if (ticket) {
             const channel = interaction.guild.channels.cache.get(ticket);
             if (channel) {
                 interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
-                ticketchannel = interaction.guild.channels.cache.get(ticket)
-                if (ticketchannel === undefined) {
-                    db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                        db.run(`DELETE FROM tickets${interaction.guild.id}`)
-                    });
-                } else {
-                    console.log(ticketchannel)
-                    ticketchannel.send("hi, use this channel my man");
-                }
+                channel.send("hi, use this channel my man");
                 return;
             }
-            removeTicket(channel);
+            console.log(channel)
+            deleteTicket(interaction.guild.id, ticket);
         }
         interaction.guild.channels.create(`ticket-0001`, {
             type: 'GUILD_TEXT',
@@ -50,6 +43,14 @@ module.exports = {
     },
 };
 
+async function deleteTicket(guildid, channelid) {
+    console.log("deleting ticket")
+    let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+        db.run(`DELETE FROM tickets${guildid} WHERE channel = ?`, channelid)
+    });
+}
+
+
 async function getCategory(guildid) {
     return new Promise(resolve => {
             let db = new sqlite3.Database("./storage.sqlite3", (err) => {
@@ -58,6 +59,7 @@ async function getCategory(guildid) {
                     resolve(row.category);
                 })
             });
+            db.close();
     })
 }
 
