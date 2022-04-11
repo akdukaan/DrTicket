@@ -39,6 +39,7 @@ module.exports = {
                 allow: ['VIEW_CHANNEL']
             }]
         }).then (channel => {
+            channel.setParent(category);
             channel.send('Your new ticket channel is here');
             db = new sqlite3.Database("./storage.sqlite3", (err) => { 
                 db.run(`INSERT INTO tickets${interaction.guild.id} VALUES (?, ?)`, [channel.id, interaction.member.id]);
