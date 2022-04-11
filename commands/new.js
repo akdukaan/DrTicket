@@ -7,10 +7,16 @@ module.exports = {
         .setName('new')
         .setDescription('Create a new support ticket!'),
     async execute(interaction) {
-        const category = await getCategory(interaction.guild.id);
+        const categoryid = await getCategory(interaction.guild.id);
         const ticket = await getTicket(interaction.guild.id, interaction.member.id);
-        console.log(ticket + " is ticket and category is is " + category)
+        console.log(ticket + " is ticket and category is is " + categoryid)
 
+        if (categoryid === undefined) {
+            interaction.reply({ content: 'Tickets have not yet been set up for this server', ephemeral: true });
+            return;
+        }
+
+        const category = interaction.guild.channels.cache.get(categoryid);
         if (category === undefined) {
             interaction.reply({ content: 'Tickets have not yet been set up for this server', ephemeral: true });
             return;
@@ -19,53 +25,73 @@ module.exports = {
         if (ticket) {
             const channel = interaction.guild.channels.cache.get(ticket);
             if (channel) {
-                interaction.reply({content: "You already have an open ticket. Please use that.", ephemeral: true});
-                channel.send("hi, use this channel my man");
+                interaction.reply({content: `You already have an open ticket. Please use ${channel.toString()}.`, ephemeral: true});
                 return;
             }
-            console.log(channel)
             deleteTicket(interaction.guild.id, ticket);
         }
       
-        interaction.guild.channels.create(`ticket-0001`, {
+        const ticketnumber = await getTicketNumber(interaction.guild.id)
+        interaction.guild.channels.create(`ticket-${(ticketnumber + "").padStart(4, "0")}`, {
             type: 'GUILD_TEXT',
-            parent: category,
+            parent: categoryid,
             permissionOverwrites: [{
                 id: interaction.member.id,
                 allow: ['VIEW_CHANNEL']
             }]
-        }).then (channel => {
-            channel.send('Your new ticket channel is here');
-            db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                db.run(`INSERT INTO tickets${interaction.guild.id} VALUES (?, ?)`, [channel.id, interaction.member.id]);
-            });
+        }).then(channel => {
+            channel.send(interaction.member.toString() + ', please describe your issue in detail.');
+            insertTicket(interaction.guild.id, channel.id, interaction.member.id)
+            setTicketCounter(interaction.guild.id, ticketnumber + 1)
+            interaction.reply({ content: `A new support ticket has been created at ${channel.toString()}!`, ephemeral: true });
         })
-        interaction.reply({ content: 'A new support ticket has been created!', ephemeral: true });
-        
     },
 };
 
+async function insertTicket(guildid, channelid, memberid) {
+    let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+        db.run(`INSERT INTO tickets${guildid} VALUES (?, ?)`, [channelid, memberid]);
+    });
+    db.close();
+}
+
+async function setTicketCounter(guildid, newcounter) {
+    let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+        db.run(`UPDATE guilds SET counter = ${newcounter} WHERE guild = ${guildid}`)
+    });
+    db.close();
+}
 
 async function deleteTicket(guildid, channelid) {
-    console.log("deleting ticket")
     let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
         db.run(`DELETE FROM tickets${guildid} WHERE channel = ?`, channelid)
     });
+    db.close();
 }
 
-
-async function getCategory(guildid) {
+async function getTicketNumber(guildid) {
     return new Promise(resolve => {
-            let db = new sqlite3.Database("./storage.sqlite3", (err) => {
-                db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
-                    if (!row) return resolve(undefined);
-                    resolve(row.category);
-                })
-            });
-            db.close();
+        let db = new sqlite3.Database("./storage.sqlite3", (err) => {
+            db.get(`SELECT counter FROM guilds WHERE guild = ?`, guildid, function(err, row) {
+                console.log(row.counter + " is counter")
+                resolve(row.counter);
+            })
+        });
+        db.close();
     })
 }
 
+async function getCategory(guildid) {
+    return new Promise(resolve => {
+        let db = new sqlite3.Database("./storage.sqlite3", (err) => {
+            db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
+                if (!row) return resolve(undefined);
+                resolve(row.category);
+            })
+        });
+        db.close();
+    })
+}
 
 async function getTicket(guildid, memberid) {
     return new Promise(resolve => {
@@ -75,5 +101,6 @@ async function getTicket(guildid, memberid) {
                 resolve(row.channel);
             })
         });
+        db.close();
     })
 }

@@ -92,3 +92,4 @@ Thumbs.db
 storage.sqlite3
 config.json
 package-lock.json
+pnpm-lock.yaml
