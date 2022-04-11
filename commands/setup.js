@@ -29,9 +29,8 @@ module.exports = {
             if (err) { 
                 console.log('Error when creating the database', err) 
             } else { 
-                // Create tables for each guild tickets
-                // todo only if its not already there
-                db.run(`INSERT INTO guilds VALUES (?, ?, ?, ?)`, [interaction.guild.id, null, tickets.id, 1]);
+                // TODO Create tables for each guild tickets
+                db.run(`INSERT OR REPLACE INTO guilds VALUES (?, ?, ?, ?)`, [interaction.guild.id, null, tickets.id, 1]);
             } 
         })
         db.close();

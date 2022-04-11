@@ -15,10 +15,8 @@ module.exports = {
                 interaction.reply({ content: 'error connecting to database!', ephemeral: true });
             } else { 
                 // Find the ticket category
-                category = getCategory(interaction.guild.id);
-                print(category + " is the category")
-
-                ticket = getTicket(interaction.guild.id, interaction.member.id);
+                category = await getCategory(interaction.guild.id);
+                ticket = await getTicket(interaction.guild.id, interaction.member.id);
                 console.log(ticket + "and cat is " + category)
 
                 if (category !== undefined) {
@@ -70,13 +68,6 @@ async function getCategory(guildid) {
             });
         }, 1000)
     })
-    let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-        db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
-            console.log("Returning a real row category")
-            return row.category;
-        })
-    });
-    console.log("Returning undefined category")
 }
 
 function getTicket(guildid, memberid) {
