@@ -32,6 +32,7 @@ module.exports = {
                 allow: ['VIEW_CHANNEL']
             }]
         }).then (channel => {
+            channel.setParent(category);
             channel.send('Your new ticket channel is here');
             db = new sqlite3.Database("./storage.sqlite3", (err) => { 
                 db.run(`INSERT INTO tickets${interaction.guild.id} VALUES (?, ?)`, [channel.id, interaction.member.id]);
@@ -55,31 +56,24 @@ async function removeTicket(guildid, channel) {
 
 async function getCategory(guildid) {
     return new Promise(resolve => {
-        setTimeout(() => {
             let db = new sqlite3.Database("./storage.sqlite3", (err) => {
                 db.get(`SELECT category FROM guilds WHERE guild = ?`, guildid, function(err, row) {
+                    if (!row) return resolve(undefined);
                     resolve(row.category);
                 })
             });
             db.close();
-        }, 1000);
     })
 }
 
 
 async function getTicket(guildid, memberid) {
     return new Promise(resolve => {
-        setTimeout(() => {
-            let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
-                db.get(`SELECT channel FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
-                    if (row === undefined) { 
-                        resolve(undefined);
-                        return;
-                    }
-                    resolve(row.channel);
-                })
-                db.close();
-            });
-        }, 1000);
+        let db = new sqlite3.Database("./storage.sqlite3", (err) => { 
+            db.get(`SELECT channel FROM tickets${guildid} WHERE creator = ?`, memberid, function(err, row) {
+                if (!row) return resolve(undefined);
+                resolve(row.channel);
+            })
+        });
     })
 }

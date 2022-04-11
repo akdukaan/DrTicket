@@ -24,6 +24,7 @@ client.once('ready', () => {
 	createDatabases()
     var currentdate = new Date(); 
     console.log(currentdate)
+    require("./deploy-commands")
 });
 
 const createDatabases = () => {
